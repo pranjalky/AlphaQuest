@@ -1,1 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AlphaQuest - Learn & Play</title>
+    <style>
+        /* =========================================
+           1. CORE VARIABLES & SETUP
+           ========================================= */
+        :root {
+            --primary: #4834d4;
+            --primary-light: #686de0;
+            --secondary: #ff7979;
+            --success: #badc58;
+            --success-dark: #6ab04c;
+            --danger: #eb4d4b;
+            --dark: #2f3640;
+            --light: #f5f6fa;
+            --white: #ffffff;
+            --shadow-sm: 0 4px 6px rgba(0,0,0,0.05);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+            --radius-md: 15px;
+            --radius-lg: 25px;
+            --font-main: 'Nunito', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--light);
+            color: var(--dark);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* =========================================
+           2. MAIN NAVIGATION (HEADER)
+           ========================================= */
+        header {
+            background: var(--white);
+            padding: 15px 20px;
+            box-shadow: var(--shadow-sm);
+            z-index: 10;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 28px;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .main-nav {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .nav-btn {
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            background: #dcdde1;
+            color: #718093;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn.active {
+            background: var(--primary);
+            color: var(--white);
+            box-shadow: 0 5px 15px rgba(72, 52, 212, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* =========================================
+           3. SCREEN CONTAINERS
+           ========================================= */
+        .screen {
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 15px;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* =========================================
+           4. TEACHING SECTION (LEARN MODE)
+           ========================================= */
+        .learn-instructions {
+            font-size: 18px;
+            color: #7f8fa6;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .alphabet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 15px;
+            width: 100%;
+        }
+
+        .learn-card {
+            background: var(--white);
+            aspect-ratio: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 35px;
+            font-weight: bold;
+            color: var(--primary);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .learn-card:hover {
+            transform: scale(1.05);
+            border-color: var(--primary-light);
+        }
+
+        /* --- Flashcard Modal --- */
+        .flashcard-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(47, 54, 64, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .flashcard-overlay.active { display: flex; }
+
+        .flashcard {
+            background: var(--white);
+            width: 100%;
+            max-width: 400px;
+            border-radius: var(--radius-lg);
+            padding: 40px 20px;
+            text-align: center;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+            animation: popUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popUp {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px; right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #7f8fa6;
+            background: none;
+            border: none;
+        }
+
+        .fc-letters {
+            font-size: 80px;
+            font-weight: 900;
+            color: var(--primary);
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        .fc-emoji {
+            font-size: 100px;
+            margin: 20px 0;
+            display: block;
+        }
+
+        .fc-word {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--dark);
+            text-transform: capitalize;
+        }
+
+        .fc-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .fc-btn {
+            background: var(--light);
+            border: none;
+            padding: 10px 20px;
+            font-size: 18px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* =========================================
+           5. GAME SECTION (PLAY MODE)
+           ========================================= */
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            background: var(--white);
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-weight: bold;
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 20px;
+        }
+
+        .game-tabs {
+            display: flex;
+            overflow-x: auto;
+            gap: 10px;
+            width: 100%;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            scrollbar-width: none;
+        }
+        
+        .game-tabs::-webkit-scrollbar { display: none; }
+
+        .g-tab-btn {
+            flex: 0 0 auto;
+            padding: 10px 15px;
+            border: 2px solid #dcdde1;
+            border-radius: 20px;
+            background: var(--white);
+            font-weight: bold;
+            color: #7f8fa6;
+            cursor: pointer;
+        }
+
+        .g-tab-btn.active {
+            background: var(--secondary);
+            color: var(--white);
+            border-color: var(--secondary);
+        }
+
+        .target-box {
+            background: var(--white);
+            width: 150px; height: 150px;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 25px;
+            border: 5px solid var(--primary-light);
+        }
+
+        .target-label { font-size: 14px; font-weight: bold; color: #7f8fa6; text-transform: uppercase; }
+        .target-display { font-size: 65px; font-weight: 900; color: var(--primary); }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            width: 100%;
+        }
+
+        .game-card {
+            background: var(--white);
+            aspect-ratio: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+            font-weight: bold;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            box-shadow: 0 4px 0 #dcdde1;
+            border: 2px solid transparent;
+            user-select: none;
+        }
+
+        .game-card:active { transform: translateY(4px); box-shadow: none; }
+        .game-card.correct { background: var(--success-dark); color: white; border-color: var(--success-dark); transform: scale(1.05); }
+        .game-card.wrong { background: var(--danger); color: white; border-color: var(--danger); }
+
+        /* =========================================
+           6. RESPONSIVE DESIGN (MOBILES)
+           ========================================= */
+        @media (max-width: 600px) {
+            .alphabet-grid { grid-template-columns: repeat(4, 1fr); }
+            .game-grid { grid-template-columns: repeat(3, 1fr); }
+            .learn-card { font-size: 28px; }
+            .game-card { font-size: 32px; }
+            .target-box { width: 120px; height: 120px; }
+            .target-display { font-size: 50px; }
+            .fc-letters { font-size: 60px; }
+            .fc-emoji { font-size: 80px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>✨ AlphaQuest ✨</h1>
+        <div class="main-nav">
+            <button class="nav-btn active" onclick="switchMainScreen('learn')">📚 LEARN</button>
+            <button class="nav-btn" onclick="switchMainScreen('play')">🎮 PLAY</button>
+        </div>
+    </header>
+
+    <main id="screen-learn" class="screen active">
+        <p class="learn-instructions">Tap any letter to study it!</p>
+        <div class="alphabet-grid" id="learn-grid">
+            </div>
+    </main>
+
+    <div class="flashcard-overlay" id="flashcard-modal">
+        <div class="flashcard">
+            <button class="close-btn" onclick="closeFlashcard()">✖</button>
+            <div class="fc-letters" id="fc-letters">A a</div>
+            <div class="fc-emoji" id="fc-emoji">🍎</div>
+            <div class="fc-word" id="fc-word">Apple</div>
+            
+            <div class="fc-controls">
+                <button class="fc-btn" onclick="changeFlashcard(-1)">⬅️ Prev</button>
+                <button class="fc-btn" onclick="changeFlashcard(1)">Next ➡️</button>
+            </div>
+        </div>
+    </div>
+
+    <main id="screen-play" class="screen">
+        
+        <div class="stats-bar">
+            <span>⭐ Score: <span id="score">0</span></span>
+            <span>🔥 Streak: <span id="streak">0</span></span>
+        </div>
+
+        <div class="game-tabs">
+            <button class="g-tab-btn active" onclick="setGameMode('big', this)">1. Big ABC</button>
+            <button class="g-tab-btn" onclick="setGameMode('small', this)">2. Small abc</button>
+            <button class="g-tab-btn" onclick="setGameMode('match', this)">3. Match Case</button>
+            <button class="g-tab-btn" onclick="setGameMode('pic', this)">4. Find Pic</button>
+            <button class="g-tab-btn" onclick="setGameMode('letter', this)">5. Find Letter</button>
+        </div>
+
+        <div class="target-box">
+            <span class="target-label" id="target-label">Find</span>
+            <span class="target-display" id="target-display">A</span>
+        </div>
+
+        <div class="game-grid" id="game-grid">
+            </div>
+    </main>
+
+    <script>
+        /**
+         * ALPHAQUEST EXPANDED DICTIONARY
+         * Includes Letters, Emojis, and Full Words for teaching.
+         */
+        const alphaData = [
+            { l: 'A', e: '🍎', w: 'Apple' }, { l: 'B', e: '⚽', w: 'Ball' },
+            { l: 'C', e: '🐱', w: 'Cat' },   { l: 'D', e: '🐶', w: 'Dog' },
+            { l: 'E', e: '🐘', w: 'Elephant'},{ l: 'F', e: '🐟', w: 'Fish' },
+            { l: 'G', e: '🍇', w: 'Grapes' },{ l: 'H', e: '🎩', w: 'Hat' },
+            { l: 'I', e: '🍦', w: 'Ice Cream'},{ l: 'J', e: '🧃', w: 'Juice' },
+            { l: 'K', e: '🪁', w: 'Kite' },  { l: 'L', e: '🦁', w: 'Lion' },
+            { l: 'M', e: '🌙', w: 'Moon' },  { l: 'N', e: '🪺', w: 'Nest' },
+            { l: 'O', e: '🍊', w: 'Orange' },{ l: 'P', e: '🍕', w: 'Pizza' },
+            { l: 'Q', e: '👑', w: 'Queen' }, { l: 'R', e: '🌈', w: 'Rainbow' },
+            { l: 'S', e: '☀️', w: 'Sun' },   { l: 'T', e: '🐯', w: 'Tiger' },
+            { l: 'U', e: '☂️', w: 'Umbrella'},{ l: 'V', e: '🎻', w: 'Violin' },
+            { l: 'W', e: '🍉', w: 'Watermelon'},{l: 'X', e: '🎵', w: 'Xylophone'},
+            { l: 'Y', e: '🪀', w: 'Yoyo' },  { l: 'Z', e: '🦓', w: 'Zebra' }
+        ];
+
+        // --- GLOBAL STATE ---
+        let currentFlashcardIndex = 0;
+        let gameState = {
+            mode: 'big',
+            score: 0,
+            streak: 0,
+            targetItem: null,
+            isLocked: false
+        };
+
+        // --- INITIALIZATION ---
+        window.onload = () => {
+            buildLearnGrid();
+            startNewRound(); // Prepare the game in the background
+        };
+
+        // --- 1. NAVIGATION LOGIC ---
+        function switchMainScreen(screenName) {
+            // Update Navigation Buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.innerText.toLowerCase().includes(screenName));
+            });
+
+            // Toggle Screens
+            document.getElementById('screen-learn').classList.remove('active');
+            document.getElementById('screen-play').classList.remove('active');
+            document.getElementById(`screen-${screenName}`).classList.add('active');
+        }
+
+        // --- 2. TEACHING MODE (LEARN LOGIC) ---
+        function buildLearnGrid() {
+            const grid = document.getElementById('learn-grid');
+            grid.innerHTML = '';
+
+            alphaData.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'learn-card';
+                card.innerText = item.l;
+                card.onclick = () => openFlashcard(index);
+                grid.appendChild(card);
+            });
+        }
+
+        function openFlashcard(index) {
+            currentFlashcardIndex = index;
+            updateFlashcardUI();
+            document.getElementById('flashcard-modal').classList.add('active');
+        }
+
+        function closeFlashcard() {
+            document.getElementById('flashcard-modal').classList.remove('active');
+        }
+
+        function changeFlashcard(direction) {
+            currentFlashcardIndex += direction;
+            
+            // Loop around if they go past Z or before A
+            if (currentFlashcardIndex < 0) currentFlashcardIndex = 25;
+            if (currentFlashcardIndex > 25) currentFlashcardIndex = 0;
+            
+            updateFlashcardUI();
+        }
+
+        function updateFlashcardUI() {
+            const data = alphaData[currentFlashcardIndex];
+            document.getElementById('fc-letters').innerText = `${data.l} ${data.l.toLowerCase()}`;
+            document.getElementById('fc-emoji').innerText = data.e;
+            document.getElementById('fc-word').innerText = data.w;
+        }
+
+        // --- 3. GAME MODE LOGIC ---
+        function setGameMode(mode, btnElement) {
+            gameState.mode = mode;
+            gameState.streak = 0; // Reset streak when changing games
+            updateHUD();
+
+            // Update tab visuals
+            document.querySelectorAll('.g-tab-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+
+            startNewRound();
+        }
+
+        function startNewRound() {
+            gameState.isLocked = false;
+            const grid = document.getElementById('game-grid');
+            grid.innerHTML = '';
+
+            // 1. Pick random target
+            const targetIndex = Math.floor(Math.random() * alphaData.length);
+            gameState.targetItem = alphaData[targetIndex];
+
+            // 2. Update Target UI
+            updateTargetUI();
+
+            // 3. Generate Choices (1 correct + 11 wrong)
+            let choices = generateChoices(gameState.targetItem);
+
+            // 4. Build Game Grid
+            choices.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'game-card';
+                card.innerText = getDisplayValue(item, false);
+                card.onclick = () => handleGameClick(item, card);
+                grid.appendChild(card);
+            });
+        }
+
+        function generateChoices(correctItem) {
+            let pool = alphaData.filter(item => item.l !== correctItem.l);
+            pool.sort(() => 0.5 - Math.random()); // Shuffle
+            let roundChoices = pool.slice(0, 11); // Take 11 wrong ones
+            
+            roundChoices.push(correctItem); // Add correct one
+            roundChoices.sort(() => 0.5 - Math.random()); // Final shuffle
+            
+            return roundChoices;
+        }
+
+        function getDisplayValue(item, isTarget) {
+            switch(gameState.mode) {
+                case 'big': return item.l;
+                case 'small': return item.l.toLowerCase();
+                case 'match': return isTarget ? item.l : item.l.toLowerCase();
+                case 'pic': return isTarget ? item.l : item.e;
+                case 'letter': return isTarget ? item.e : item.l;
+            }
+        }
+
+        function updateTargetUI() {
+            const display = document.getElementById('target-display');
+            const label = document.getElementById('target-label');
+            
+            display.innerText = getDisplayValue(gameState.targetItem, true);
+            
+            if (gameState.mode === 'match') label.innerText = "Find Small";
+            else if (gameState.mode === 'pic') label.innerText = "Find Picture";
+            else if (gameState.mode === 'letter') label.innerText = "Starts With";
+            else label.innerText = "Find";
+        }
+
+        function handleGameClick(clickedItem, cardElement) {
+            if (gameState.isLocked) return;
+
+            if (clickedItem.l === gameState.targetItem.l) {
+                // Correct
+                gameState.isLocked = true;
+                gameState.streak++;
+                gameState.score += (10 + gameState.streak);
+                
+                cardElement.classList.add('correct');
+                updateHUD();
+
+                setTimeout(() => { startNewRound(); }, 800);
+            } else {
+                // Wrong
+                gameState.streak = 0;
+                updateHUD();
+                
+                cardElement.classList.add('wrong');
+                setTimeout(() => { cardElement.classList.remove('wrong'); }, 400);
+            }
+        }
+
+        function updateHUD() {
+            document.getElementById('score').innerText = gameState.score;
+            document.getElementById('streak').innerText = gameState.streak;
+        }
+
+    </script>
+</body>
+</html>
